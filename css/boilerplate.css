@@ -1,0 +1,65 @@
+html {
+  height                   : 100%;
+  font-size                : 100%;
+  -webkit-text-size-adjust : 100%;
+  -moz-text-size-adjust    : 100%;
+  -ms-text-size-adjust     : 100%;
+  overflow-y               : auto;
+}
+
+body {
+  min-height : 100%;
+  margin     : 0;
+}
+
+body * {
+  outline : none;
+}
+
+#viewDiv {
+  cursor     : crosshair;
+  height     : calc(100vh - 160px) !important;
+  margin     : 0;
+  padding    : 0;
+  box-shadow : 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#user-thumb-node {
+  height         : 36px;
+  border-radius  : 18px;
+  vertical-align : middle;
+}
+
+.esri-search__input {
+  height : 32px !important;
+}
+
+#country-list {
+  height     : calc(100vh - 275px) !important;
+  overflow-y : scroll;
+}
+
+#country-list .dgrid {
+  border : none;
+}
+
+input[type=range] {
+  height           : 8px;
+  background-color : #2493f2;
+}
+
+.distance-table,
+.distance-table td {
+  border : none;
+}
+
+.map-view {
+  width      : 300px;
+  height     : 150px;
+  box-shadow : 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.dgrid-selected {
+  color            : #eee;
+  background-color : #2493f2;
+}

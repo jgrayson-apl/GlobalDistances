@@ -1,0 +1,25 @@
+{
+  "appid": "",
+  "group": "",
+  "title": "",
+  "webmap": "",
+  "webscene": "08880ee3292b408fb18b8d85b14dca0e",
+  "portalUrl": "https://www.arcgis.com",
+  "oauthappid": "hrFP8yDGOiGFx4ub",
+  "proxyUrl": "https://maps.esri.com/proxy/DotNet/proxy.ashx",
+  "units": "dual",
+  "helperServices": {
+    "geometry": {
+      "url": null
+    },
+    "printTask": {
+      "url": null
+    },
+    "elevationSync": {
+      "url": null
+    },
+    "geocode": [{
+      "url": null
+    }]
+  }
+}

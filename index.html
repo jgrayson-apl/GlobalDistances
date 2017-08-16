@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <link rel="stylesheet" href="//s3-us-west-1.amazonaws.com/patterns.esri.com/files/calcite-web/1.0.0-rc.7/css/calcite-web-dark.min.css">
+    <link rel="stylesheet" href="//js.arcgis.com/4.4/esri/themes/dark/main.css">
+    <link rel="stylesheet" href="./css/boilerplate.css">
+    <link rel="stylesheet" href="./css/slider.css">
+    <script type="text/javascript" src="./js/dojoConfig.js"></script>
+    <script type="text/javascript" src="//js.arcgis.com/4.4/"></script>
+    <script type="text/javascript">
+      require([
+        "boilerplate",
+        "dojo/text!config/config.json",
+        "dojo/text!boilerplate/settings.json",
+        "application"
+      ], function (Boilerplate, configSettings, boilerplateSettings, app) {
+
+        new Boilerplate(JSON.parse(configSettings), JSON.parse(boilerplateSettings)).then(function (boilerplateResponse) {
+          const exampleApp = new app();
+          exampleApp.init(boilerplateResponse);
+        });
+
+      });
+    </script>
+  </head>
+  <body>
+
+    <!-- DETAILS -->
+    <div class="js-modal modal-overlay" data-modal="app-details-dialog">
+      <div class="modal-content column-12" role="dialog" aria-labelledby="modal" role="dialog">
+        <a class="js-modal-toggle right icon-ui-close" href="#" aria-label="close-modal"></a>
+        <h3 class='trailer-half'>Boilerplate Template and Calcite Web</h3>
+        <p>This application template loads a web map or web scene and provides basic mapping capabilities via the ArcGIS API for JavaScript 4.x.</p>
+        <div>This application is built using:
+          <ul>
+            <li>
+              <a href="https://developers.arcgis.com/javascript/" target="_blank">Esri ArcGIS API for Javascript 4.x</a>
+            </li>
+            <li>
+              <a href="https://github.com/Esri/application-boilerplate-js" target="_blank">Esri Application Boilerplate Template</a>
+            </li>
+            <li>
+              <a href="http://esri.github.io/calcite-web/" target="_blank">Esri Calcite Web framework</a>
+            </li>
+          </ul>
+        </div>
+        <div class="text-right">
+          <button class="btn js-modal-toggle">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP SIDE DRAWER -->
+    <div class="drawer drawer-left js-drawer" data-drawer="top-nav" tabindex="0">
+      <nav class="drawer-nav" role="navigation">
+        <aside class="side-nav">
+          <h2 class="side-nav-title">Map</h2>
+          <div class="panel panel-white">
+            <div id="current-map-card" class="card block margin-left-quarter margin-right-quarter">
+              <figure class="card-image-wrap">
+                <img id="current-map-card-thumb" class="card-image" src="" alt="">
+                <div id="current-map-card-caption" class="card-image-caption text-right font-size--3"></div>
+              </figure>
+              <div class="card-content">
+                <h4><a id="current-map-card-title" href="" target="_blank"></a></h4>
+                <p id="current-map-card-description" class="card-last font-size--3"></p>
+              </div>
+            </div>
+          </div>
+          <h2 class="side-nav-title">Social</h2>
+          <div class="text-center padding-leader-half">
+            <span class="icon-social-contact" aria-label="Email"></span>
+            <span class="icon-social-geonet" aria-label="GeoNet"></span>
+            <span class="icon-social-facebook" aria-label="Facebook"></span>
+            <span class="icon-social-twitter" aria-label="Twitter"></span>
+          </div>
+        </aside>
+      </nav>
+    </div>
+
+    <!-- BODY WRAPPER -->
+    <div class="wrapper">
+
+      <!-- TOP NAVIGATION -->
+      <header class="top-nav">
+        <div class="grid-container">
+          <div class="column-24">
+
+            <!-- APP TITLE -->
+            <span id="app-title-node" class="top-nav-title font-size-2 text-blue"></span>
+
+            <!-- APP DETAILS -->
+            <nav id="app-details-node" class="top-nav-list right" role="navigation">
+              <a class="top-nav-link icon-ui-description margin-left-1 js-modal-toggle" data-modal="app-details-dialog" href="#"></a>
+            </nav>
+
+          </div>
+        </div>
+      </header>
+
+      <!--
+      <header class="third-nav">
+        <div class="third-nav-container">
+          <div class="grid-container">
+            <nav class="column-24" role="navigation" aria-labelledby="thirdnav"></nav>
+          </div>
+        </div>
+      </header>
+      -->
+
+      <!-- REST OF BODY -->
+      <div class="grid-container leader-half trailer-half">
+
+        <!-- LEFT PANEL -->
+        <div class="column-6 padding-right-quarter ui-layout ui-layout-left">
+          <div class="panel panel-white panel-no-border panel-no-padding">
+
+            <div class="panel trailer-half">
+              <label class="trailer-half">
+                <span class="text-blue font-size-1">Location</span>
+              </label>
+              <div id="search-node" class="right"></div>
+              <input id="location-coords-node" class="text-center" type="text" readonly="readonly">
+            </div>
+
+            <aside class="side-nav" aria-role="complementary">
+              <div class="side-nav-title font-size-1">
+                <span class="text-blue">Countries</span>
+                <mark id="country-count-label" class="label label-blue right">0 of 0</mark>
+              </div>
+              <nav id="country-list" role="navigation" aria-labelledby="sidenav"></nav>
+            </aside>
+
+          </div>
+        </div>
+
+        <!-- CENTER PANEL -->
+        <div class="column-18 padding-left-quarter ui-layout ui-layout-center">
+
+          <table class="distance-table trailer-0">
+            <tbody>
+              <tr>
+                <td>
+                 <span class="column-2">
+                   <span class="text-blue font-size-1 right">Distance:</span>
+                 </span>
+                </td>
+                <td>
+                 <span class="column-13">
+                   <input id="distance-slider" type="range" min="100" max="20000" step="100" value="1000">
+                 </span>
+                </td>
+                <td>
+                 <span class="column-2">
+                   <input id="distance-input" type="number" class="text-right" min="100" max="20000" step="100" value="1000">
+                 </span>
+                </td>
+                <td>
+                  <span class="column-2">kilometers</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div id="viewDiv"></div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="notifications-node"></div>
+
+  </body>
+</html>
