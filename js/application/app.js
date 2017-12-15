@@ -37,6 +37,7 @@ define([
   "dgrid/OnDemandList",
   "dgrid/Selection",
   "esri/identity/IdentityManager",
+  "esri/request",
   "esri/core/lang",
   "esri/core/watchUtils",
   "esri/core/promiseUtils",
@@ -53,6 +54,7 @@ define([
   "esri/geometry/geometryEngine",
   "esri/geometry/Point",
   "esri/geometry/Polyline",
+  "esri/geometry/Polygon",
   "esri/geometry/Extent",
   "esri/renderers/SimpleRenderer",
   "esri/symbols/PointSymbol3D",
@@ -63,6 +65,7 @@ define([
   "esri/layers/support/LabelClass",
   "esri/symbols/LabelSymbol3D",
   "esri/symbols/TextSymbol3DLayer",
+  "esri/layers/support/RasterFunction",
   "esri/widgets/Home",
   "esri/widgets/Search",
   "esri/widgets/BasemapGallery",
@@ -71,10 +74,11 @@ define([
   "./Firefly/FireflyPolygonSymbol3D"
 ], function (calcite, ItemHelper, UrlParamHelper, i18n, declare, lang, array, Color, colors, number, query, on,
              dom, domAttr, domClass, domGeom, domConstruct, Memory, Trackable, SimpleQuery, OnDemandList, Selection,
-             IdentityManager, esriLang, watchUtils, promiseUtils, Portal, esriMap, Viewpoint, MapView,
-             Layer, FeatureLayer, Graphic, SpatialReference, GeometryService, ProjectParameters, geometryEngine, Point, Polyline, Extent,
+             IdentityManager, esriRequest, esriLang, watchUtils, promiseUtils, Portal, esriMap, Viewpoint, MapView,
+             Layer, FeatureLayer, Graphic, SpatialReference, GeometryService, ProjectParameters,
+             geometryEngine, Point, Polyline, Polygon, Extent,
              SimpleRenderer, PointSymbol3D, ObjectSymbol3DLayer, LineSymbol3D, LineSymbol3DLayer, SimpleLineSymbol,
-             LabelClass, LabelSymbol3D, TextSymbol3DLayer,
+             LabelClass, LabelSymbol3D, TextSymbol3DLayer, RasterFunction,
              Home, Search, BasemapGallery, Expand,
              FireflyLineSymbol3D, FireflyPolygonSymbol3D) {
 
@@ -317,6 +321,7 @@ define([
       this.initializeCountryList(view).then(() => {
         this.initializeRangeGraphic(view);
         this.initializeAnalysisLocation(view);
+        //this.initializePopulationLayer(view);
       });
 
     },
@@ -413,12 +418,16 @@ define([
         //this.initializeAzimuthalEquidistantView(view, this.countriesLayer);
 
         const countrySymbol = this.countriesLayer.renderer.symbol.symbolLayers.getItemAt(0);
-        this.countriesLayer.renderer = new SimpleRenderer({
-          symbol: new FireflyPolygonSymbol3D({
-            color: countrySymbol.outline.color,
+        let fireflyCountrySymbol = null;
+        try {
+          fireflyCountrySymbol = new FireflyPolygonSymbol3D({
+            color: new Color(countrySymbol.outline.color),
             size: 3.5
-          })
-        });
+          });
+        } catch (error) {
+          console.error(error);
+        }
+        this.countriesLayer.renderer = new SimpleRenderer({ symbol: fireflyCountrySymbol });
 
         const rangeQuery = this.countriesLayer.createQuery();
         return this.countriesLayer.queryFeatures(rangeQuery).then((featureSet) => {
@@ -504,103 +513,134 @@ define([
      * @param view
      * @param countriesLayer
      */
-    /*initializeAzimuthalEquidistantView: function (view, countriesLayer) {
+    initializeAzimuthalEquidistantView: function (view, countriesLayer) {
 
-     const geomService = new GeometryService({ url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer" });
+      //const geomService = new GeometryService({ url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer" });
 
-     const ae_wktTemplate = 'PROJCS["AzEq",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433],METADATA["World",-180.0,-90.0,180.0,90.0,0.0,0.0174532925199433,0.0,1262]],PROJECTION["Azimuthal_Equidistant"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",{Central_Meridian}],PARAMETER["Latitude_Of_Origin",{Latitude_Of_Origin}],UNIT["Meter",1.0]]';
+      const ae_wktTemplate = 'PROJCS["AzEq",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433],METADATA["World",-180.0,-90.0,180.0,90.0,0.0,0.0174532925199433,0.0,1262]],PROJECTION["Azimuthal_Equidistant"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",{Central_Meridian}],PARAMETER["Latitude_Of_Origin",{Latitude_Of_Origin}],UNIT["Meter",1.0]]';
 
-     const createAzimuthalEquidistant = (lon, lat) => {
-     return new SpatialReference({
-     wkt: lang.replace(ae_wktTemplate, {
-     "Central_Meridian": lon,
-     "Latitude_Of_Origin": lat
-     })
-     });
-     };
+      const createAzimuthalEquidistant = (lon, lat) => {
+        return new SpatialReference({
+          wkt: lang.replace(ae_wktTemplate, {
+            "Central_Meridian": lon,
+            "Latitude_Of_Origin": lat
+          })
+        });
+      };
 
-     const ae_SR = createAzimuthalEquidistant(view.extent.center.longitude, view.extent.center.latitude);
-     const ae_initialExtent = new Extent({
-     xmin: -21441540.21270714,
-     ymin: -23079703.217770502,
-     xmax: 21749783.327468682,
-     ymax: 23529638.732059523,
-     spatialReference: ae_SR
-     });
 
-     const mapContainer = domConstruct.create("div", { className: "map-view" });
-     view.ui.add(mapContainer, "bottom-right");
+      this.updateAzEqView = (location) => {
 
-     const ae_countriesLayer = new FeatureLayer({ url: countriesLayer.url });
+        const ae_SR = createAzimuthalEquidistant(location.longitude, location.latitude);
+        const ae_initialExtent = new Extent({
+          xmin: -21441540.21270714,
+          ymin: -23079703.217770502,
+          xmax: 21749783.327468682,
+          ymax: 23529638.732059523,
+          spatialReference: ae_SR
+        });
 
-     const ae_view = new MapView({
-     container: mapContainer,
-     ui: { components: [] },
-     spatialReference: ae_SR,
-     extent: ae_initialExtent,
-     map: new esriMap({
-     layers: [ae_countriesLayer]
-     })
-     });
-     ae_view.then(() => {
+        const mapContainer = domConstruct.create("div", { className: "map-view" });
+        view.ui.empty("bottom-right");
+        view.ui.add(mapContainer, "bottom-right");
 
-     ae_view.whenLayerView(ae_countriesLayer).then((ae_countriesLayerView) => {
-     watchUtils.whenFalseOnce(ae_countriesLayerView, "updating", () => {
-     this.hasAEView = true;
+        const ae_countriesLayer = new FeatureLayer({ url: countriesLayer.url });
 
-     this.updateAzEqView = (location) => {
+        const ae_view = new MapView({
+          container: mapContainer,
+          ui: { components: [] },
+          spatialReference: ae_SR,
+          extent: ae_initialExtent,
+          map: new esriMap({
+            layers: [ae_countriesLayer]
+          })
+        });
 
-     const ae_SR = createAzimuthalEquidistant(location.longitude, location.latitude);
+      };
 
-     const projectParams = new ProjectParameters({
-     outSpatialReference: ae_SR,
-     geometries: [ae_view.viewpoint.targetGeometry]
-     });
-     geomService.project(projectParams).then((projectResults) => {
+      this.updateAzEqView(view.extent.center);
 
-     //const ae_extent = projectResults[0];
+      this.hasAEView = true;
 
-     const ae_viewpoint = ae_view.viewpoint.clone();
-     ae_viewpoint.targetGeometry = projectResults[0]; //ae_extent.center;
+    },
 
-     // UPDATE VIEW SR //
-     ae_view.spatialReference = ae_SR;
-     // UPDATE VIEWPOINT //
-     ae_view.viewpoint = ae_viewpoint;
-     // UPDATE EXTENT //
-     //ae_view.extent = ae_extent;
+    /**
+     * World Population Estimated 2015
+     * - http://apl.maps.arcgis.com/home/item.html?id=2417dafad0b54276a2333d76a0b27311
+     * - http://resources.arcgis.com/en/help/arcgis-rest-api/#/Raster_Function_Objects/02r3000000rv000000/
+     *
+     * @param view
+     */
+    initializePopulationLayer: function (view) {
 
-     });
+      Layer.fromPortalItem({ id: "2417dafad0b54276a2333d76a0b27311" }).then((layer) => {
 
-     /!* const ae_viewpoint = ae_view.viewpoint.clone();
-     ae_viewpoint.targetGeometry = new Point({
-     spatialReference: ae_SR,
-     longitude: location.longitude,
-     latitude: location.latitude
-     });*!/
+        layer.load().then(() => {
+          layer.format = "lerc";
 
-     /!*const ae_extent = new Extent({
-     xmin: -21441540.21270714,
-     ymin: -23079703.217770502,
-     xmax: 21749783.327468682,
-     ymax: 23529638.732059523,
-     spatialReference: ae_SR
-     });*!/
+          /*esriRequest.setRequestPreCallback((ioArgs) => {
+           if(ioArgs.url.startsWith(layer.url) && ioArgs.url.endsWith("/exportImage")) {
+           if(ioArgs.content.renderingRule) {
+           if(ioArgs.content.renderingRule !== JSON.stringify(layer.renderingRule.toJSON())) {
+           ioArgs.content.renderingRule = JSON.stringify(layer.renderingRule.toJSON());
+           }
+           }
+           }
+           return ioArgs;
+           });*/
 
-     // UPDATE VIEW SR //
-     //ae_view.spatialReference = ae_SR;
-     // UPDATE VIEWPOINT //
-     ////ae_view.viewpoint.targetGeometry.spatialReference = ae_SR;
-     //ae_view.viewpoint = ae_viewpoint;
-     // UPDATE EXTENT //
-     //ae_view.extent = ae_extent;
-     };
+          const populationEstimateNode = domConstruct.create("div", { className: "font-size-4 text-red" });
+          view.ui.add(populationEstimateNode, "bottom-left");
 
-     });
-     });
-     });
 
-     },*/
+          const getPopulationEstimate = (pixelData) => {
+            if((pixelData == null) || (pixelData.pixelBlock == null) || (pixelData.pixelBlock.pixels == null)) {
+              return;
+            }
+            const noData = pixelData.pixelBlock.statistics[0].noDataValue;
+            return pixelData.pixelBlock.pixels[0].reduce((popEstimate, pixel) => {
+              if(pixel !== noData) {
+                popEstimate += pixel;
+              }
+              return popEstimate;
+            }, 0);
+          };
+
+
+          this.updatePopulationEstimate = (geometry) => {
+
+            const clippingGeometry = new Polygon({
+              spatialReference: geometry.spatialReference,
+              rings: geometry.paths
+            });
+
+            layer.renderingRule = new RasterFunction({
+              functionName: "Clip",
+              functionArguments: {
+                "ClippingGeometry": clippingGeometry.toJSON(),
+                "ClippingType": 1
+              }
+            });
+
+            const widthPixels = (clippingGeometry.extent.width / view.extent.width) * view.width;
+            const heightPixels = (clippingGeometry.extent.height / view.extent.height) * view.height;
+            layer.fetchImage(clippingGeometry.extent, widthPixels, heightPixels).then((fetchImageResponse) => {
+              //layer.fetchImage(view.extent, view.width, view.height).then((fetchImageResponse) => {
+
+              const populationEstimate = getPopulationEstimate(fetchImageResponse.pixelData);
+              populationEstimateNode.innerHTML = "Population Estimate: " + number.format(populationEstimate);
+
+            }).otherwise((error) => {
+              console.warn(error);
+            });
+
+          };
+
+        });
+      });
+
+
+    },
 
     /**
      *
@@ -613,9 +653,24 @@ define([
 
       // FIREFLY LINE SYMBOL //
       const rangeSymbol = new FireflyLineSymbol3D({
-        color: Color.named.red,
+        color: new Color(Color.named.red),
         size: 9
       });
+
+      /*const rangeSymbol = new LineSymbol3D({
+        symbolLayers: [
+          {
+            type: "line",
+            material: { color: Color.named.white.concat(0.9) },
+            size: 1.5
+          },
+          {
+            type: "line",
+            material: { color: Color.named.red.concat(0.4) },
+            size: 9
+          }
+        ]
+      });*/
 
       // RANGE LAYER //
       const rangeLayer = new FeatureLayer({
@@ -648,7 +703,7 @@ define([
             labelExpressionInfo: {
               value: "{label} Kms"
             },
-            labelPlacement: "center-along",
+            labelPlacement: "center-center",
             symbol: new LabelSymbol3D({
               symbolLayers: [
                 new TextSymbol3DLayer({
@@ -710,14 +765,14 @@ define([
       let ringDistances = [this.distanceKms];
       const ringCount = Math.floor(this.distanceKms / ringStep);
       if(ringCount > 0) {
-        ringDistances = Array(ringCount).fill().map((e, i) => (i + 1) * ringStep);
+        ringDistances = Array(ringCount).fill().map((_, i) => (i + 1) * ringStep);
         if(ringDistances.indexOf(this.distanceKms) === -1) {
           ringDistances.push(this.distanceKms);
         }
       }
 
       // RANGE INFOS //
-      const rangeInfoHanles = ringDistances.map((ringDistance) => {
+      const rangeInfoHandles = ringDistances.map((ringDistance) => {
         // RANGE BUFFER //
         const rangeBuffer = geometryEngine.geodesicBuffer(this.location, ringDistance, "kilometers");
         // RANGE INFO //
@@ -726,7 +781,7 @@ define([
           distance: ringDistance
         })
       });
-      this.analysisHandle = promiseUtils.eachAlways(rangeInfoHanles).then((rangeInfoResults) => {
+      this.analysisHandle = promiseUtils.eachAlways(rangeInfoHandles).then((rangeInfoResults) => {
 
         // RESULTS //
         const rangeInfos = rangeInfoResults.map((rangeInfoResult) => {
@@ -734,7 +789,12 @@ define([
         });
 
         // UPDATE RANGE GRAPHICS //
-        this.updateRangeGraphics(rangeInfos, this.distanceKms);
+        this.updateRangeGraphics(rangeInfos);
+
+        // UPDATE POPULATION ESTIMATE //
+        //const clippingGeometry = rangeInfos[rangeInfos.length - 1].geometry;
+        //this.updatePopulationEstimate(clippingGeometry);
+
 
         // CALC DISTANCES //
         this.countryStore.forEach((countryInfo) => {
