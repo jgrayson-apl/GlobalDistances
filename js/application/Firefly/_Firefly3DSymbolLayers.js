@@ -26,8 +26,7 @@ define([
 
     properties: {
       color: {
-        type: Color,
-        value: new Color(defaultColor)
+        value: defaultColor
       },
       size: {
         type: Number,
@@ -50,13 +49,13 @@ define([
       fireflyColor.a = 0.1;
 
       const stepSize = (this.size / this.steps);
-      //const centerLayer = { type: "line", size: (stepSize * 1.5), material: { color: centerColor } };
-      const centerLayer = new LineSymbol3DLayer({ size: (stepSize * 1.5), material: { color: centerColor } });
+      const centerLayer = { type: "line", size: (stepSize * 1.5), material: { color: centerColor } };
+      //const centerLayer = new LineSymbol3DLayer({ size: (stepSize * 1.5), material: { color: centerColor } });
 
       const lineSizes = Array(this.steps).fill().map((_, i) => (i + 1) * (stepSize * 2));
       const fireflyLayers = lineSizes.map((lineSize) => {
-        //return { type: "line", size: lineSize, material: { color: fireflyColor } };
-        return new LineSymbol3DLayer({ size: lineSize, material: { color: fireflyColor } });
+        return { type: "line", size: lineSize, material: { color: fireflyColor } };
+        //return new LineSymbol3DLayer({ size: lineSize, material: { color: fireflyColor } });
       });
 
       return fireflyLayers.concat(centerLayer);

@@ -421,7 +421,7 @@ define([
         let fireflyCountrySymbol = null;
         try {
           fireflyCountrySymbol = new FireflyPolygonSymbol3D({
-            color: new Color(countrySymbol.outline.color),
+            color: countrySymbol.outline.color,
             size: 3.5
           });
         } catch (error) {
@@ -653,7 +653,7 @@ define([
 
       // FIREFLY LINE SYMBOL //
       const rangeSymbol = new FireflyLineSymbol3D({
-        color: new Color(Color.named.red),
+        color: Color.named.red,
         size: 9
       });
 

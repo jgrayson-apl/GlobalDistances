@@ -5,7 +5,7 @@
  *
  * Author:   John Grayson - Applications Prototype Lab - Esri
  * Created:   8/14/2017 - 0.0.1 -
- * Modified: 12/15/2017 - 0.0.2 - trying to move up to 4.6 * Modified:
+ * Modified: 12/15/2017 - 0.0.2 - trying to move up to 4.6
  *
  */
 define([
