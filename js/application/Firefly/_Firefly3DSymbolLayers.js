@@ -26,7 +26,14 @@ define([
 
     properties: {
       color: {
-        value: defaultColor
+        type: Color,
+        value: new Color(defaultColor),
+        get: function () {
+          return this._get("color");
+        },
+        set: function (value) {
+          this._set("color", value);
+        }
       },
       size: {
         type: Number,
